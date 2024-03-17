@@ -44,18 +44,35 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 
-//--- PARSER: ---
-stylesheet: cssdefinition*;
+//--- PARSER:
+stylesheet: (stylerule | variableAssignment)*;
 
-cssdefinition: cssclass | variabledefinition;
-variabledefinition: variable ASSIGNMENT_OPERATOR expression SEMICOLON;
-cssclass: ident OPEN_BRACE entry+ CLOSE_BRACE;
-variable: LOWER_IDENT | CAPITAL_IDENT;
-ident: LOWER_IDENT | CAPITAL_IDENT | ID_IDENT | CLASS_IDENT;
-entry: (LOWER_IDENT COLON expression SEMICOLON) | ifstatement | elsestatement;
-expression: value | operation+;
-value: COLOR | PIXELSIZE | variable | TRUE | FALSE | SCALAR;
-operation: (value operator)+ value;
-operator: PLUS | MIN | MUL;
-ifstatement: IF BOX_BRACKET_OPEN variable BOX_BRACKET_CLOSE OPEN_BRACE entry+ CLOSE_BRACE;
-elsestatement: ELSE OPEN_BRACE entry+ CLOSE_BRACE;
+declaration: propertyName COLON ((literal|variableReference)|operation+) SEMICOLON;
+
+elseclause: ELSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
+
+ifclause: IF BOX_BRACKET_OPEN ((literal|variableReference)|operation+) BOX_BRACKET_CLOSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE elseclause?;
+
+literal: TRUE | FALSE | PIXELSIZE | PERCENTAGE | SCALAR | COLOR;
+
+operation:(multiplyOperation | addOperation | subtractOperation)+ (literal|variableReference);
+
+propertyName: LOWER_IDENT;
+
+selector: classSelector | idSelector | tagSelector;
+
+stylerule: selector OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
+
+variableAssignment: variableReference ASSIGNMENT_OPERATOR ((literal|variableReference)|operation+) SEMICOLON;
+
+variableReference: CAPITAL_IDENT;
+
+classSelector: CLASS_IDENT;
+
+idSelector: ID_IDENT;
+
+tagSelector: LOWER_IDENT;
+
+addOperation: (literal | variableReference) PLUS;
+multiplyOperation: (literal | variableReference) MUL;
+subtractOperation: (literal | variableReference) MIN;
