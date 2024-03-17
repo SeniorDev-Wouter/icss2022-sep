@@ -45,5 +45,17 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
-stylesheet: EOF;
+stylesheet: cssdefinition*;
 
+cssdefinition: cssclass | variabledefinition;
+variabledefinition: variable ASSIGNMENT_OPERATOR expression SEMICOLON;
+cssclass: ident OPEN_BRACE entry+ CLOSE_BRACE;
+variable: LOWER_IDENT | CAPITAL_IDENT;
+ident: LOWER_IDENT | CAPITAL_IDENT | ID_IDENT | CLASS_IDENT;
+entry: (LOWER_IDENT COLON expression SEMICOLON) | ifstatement | elsestatement;
+expression: value | operation+;
+value: COLOR | PIXELSIZE | variable | TRUE | FALSE | SCALAR;
+operation: (value operator)+ value;
+operator: PLUS | MIN | MUL;
+ifstatement: IF BOX_BRACKET_OPEN variable BOX_BRACKET_CLOSE OPEN_BRACE entry+ CLOSE_BRACE;
+elsestatement: ELSE OPEN_BRACE entry+ CLOSE_BRACE;
