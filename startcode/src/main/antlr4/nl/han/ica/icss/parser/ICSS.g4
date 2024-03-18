@@ -47,7 +47,7 @@ ASSIGNMENT_OPERATOR: ':=';
 //--- PARSER:
 stylesheet: (stylerule | variableAssignment)*;
 
-declaration: propertyName COLON ((literal|variableReference)|operation+) SEMICOLON;
+declaration: propertyName COLON (literal|variableReference|operation+) SEMICOLON;
 
 elseclause: ELSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
 
@@ -55,7 +55,7 @@ ifclause: IF BOX_BRACKET_OPEN ((literal|variableReference)|operation+) BOX_BRACK
 
 literal: TRUE | FALSE | PIXELSIZE | PERCENTAGE | SCALAR | COLOR;
 
-operation:(multiplyOperation | addOperation | subtractOperation)+ (literal|variableReference);
+operation:(multiplyOperation | addOperation | subtractOperation)+;
 
 propertyName: LOWER_IDENT;
 
@@ -73,6 +73,6 @@ idSelector: ID_IDENT;
 
 tagSelector: LOWER_IDENT;
 
-addOperation: (literal | variableReference) PLUS;
-multiplyOperation: (literal | variableReference) MUL;
-subtractOperation: (literal | variableReference) MIN;
+addOperation: (literal | variableReference) PLUS (literal | variableReference| operation);
+multiplyOperation: (literal | variableReference) MUL (literal | variableReference| operation);
+subtractOperation: (literal | variableReference) MIN (literal | variableReference| operation);

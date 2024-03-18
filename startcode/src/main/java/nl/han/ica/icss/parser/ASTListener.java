@@ -3,6 +3,7 @@ package nl.han.ica.icss.parser;
 import java.util.Stack;
 
 
+import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -23,12 +24,12 @@ public class ASTListener extends ICSSBaseListener {
 
 	//Use this to keep track of the parent nodes when recursively traversing the ast
 //	private IHANStack<ASTNode> currentContainer;
-	private Stack<ASTNode> currentContainer;
+	private IHANStack<ASTNode> currentContainer;
 
 	public ASTListener() {
 		ast = new AST();
 		//currentContainer = new HANStack<>();
-		currentContainer = new Stack<>();
+		currentContainer = new HANStack<>();
 	}
     public AST getAST() {
         return ast;
@@ -107,27 +108,6 @@ public class ASTListener extends ICSSBaseListener {
 	public void exitLiteral(ICSSParser.LiteralContext ctx) {
 		Literal literal = (Literal) currentContainer.pop();
 		currentContainer.peek().addChild(literal);
-	}
-
-	@Override
-	public void enterOperation(ICSSParser.OperationContext ctx) {
-		Operation operation;
-		if(ctx.addOperation() != null){
-			operation = new AddOperation();
-		}else if(ctx.subtractOperation() != null){
-			operation = new SubtractOperation();
-		}else if(ctx.multiplyOperation() != null){
-			operation = new MultiplyOperation();
-		}else {
-			throw new IllegalArgumentException("Unknown operation type");
-		}
-		currentContainer.push(operation);
-	}
-
-	@Override
-	public void exitOperation(ICSSParser.OperationContext ctx) {
-		Operation operation = (Operation) currentContainer.pop();
-		currentContainer.peek().addChild(operation);
 	}
 
 	@Override
