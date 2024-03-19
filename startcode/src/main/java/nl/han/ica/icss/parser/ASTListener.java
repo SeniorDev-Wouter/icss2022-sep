@@ -1,8 +1,5 @@
 package nl.han.ica.icss.parser;
 
-import java.util.Stack;
-
-
 import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
@@ -84,30 +81,72 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.peek().addChild(ifClause);
 	}
 
+
 	@Override
-	public void enterLiteral(ICSSParser.LiteralContext ctx) {
-		Literal literal;
-		 if (ctx.TRUE() != null | ctx.FALSE() !=null) {
-			literal = new BoolLiteral(ctx.getText());
-		} else if (ctx.PIXELSIZE() != null) {
-			literal = new PixelLiteral(ctx.getText());
-		} else if (ctx.PERCENTAGE() != null) {
-			literal = new PercentageLiteral(ctx.getText());
-		} else if (ctx.SCALAR() != null) {
-			literal = new ScalarLiteral(ctx.getText());
-		} else if (ctx.COLOR() != null) {
-			literal = new ColorLiteral(ctx.getText());
-		} else {
-			throw new IllegalArgumentException("Unknown literal type");
-		}
-		currentContainer.push(literal);
+	public void enterBoolfalse(ICSSParser.BoolfalseContext ctx) {
+		Literal boolFalse = new BoolLiteral(ctx.getText());
+		currentContainer.push(boolFalse);
+	}
+	@Override
+	public void exitBoolfalse(ICSSParser.BoolfalseContext ctx) {
+		Literal boolFalse = (BoolLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(boolFalse);
 	}
 
+	@Override
+	public void enterBooltrue(ICSSParser.BooltrueContext ctx) {
+		Literal boolTrue = new BoolLiteral(ctx.getText());
+		currentContainer.push(boolTrue);
+	}
+	@Override
+	public void exitBooltrue(ICSSParser.BooltrueContext ctx) {
+		Literal boolTrue = (BoolLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(boolTrue);
+	}
 
 	@Override
-	public void exitLiteral(ICSSParser.LiteralContext ctx) {
-		Literal literal = (Literal) currentContainer.pop();
-		currentContainer.peek().addChild(literal);
+	public void enterColor(ICSSParser.ColorContext ctx) {
+		Literal color = new ColorLiteral(ctx.getText());
+		currentContainer.push(color);	}
+
+	@Override
+	public void exitColor(ICSSParser.ColorContext ctx) {
+		Literal color = (ColorLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(color);
+	}
+
+	@Override
+	public void enterPercentage(ICSSParser.PercentageContext ctx) {
+		Literal percentage = new PercentageLiteral(ctx.getText());
+		currentContainer.push(percentage);	}
+
+	@Override
+	public void exitPercentage(ICSSParser.PercentageContext ctx) {
+		Literal percentage = (PercentageLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(percentage);	}
+
+	@Override
+	public void enterPixelsize(ICSSParser.PixelsizeContext ctx) {
+		Literal pixel = new PixelLiteral(ctx.getText());
+		currentContainer.push(pixel);
+	}
+
+	@Override
+	public void exitPixelsize(ICSSParser.PixelsizeContext ctx) {
+		Literal pixel = (PixelLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(pixel);
+	}
+
+	@Override
+	public void enterScalar(ICSSParser.ScalarContext ctx) {
+		Literal scalar = new ScalarLiteral(ctx.getText());
+		currentContainer.push(scalar);
+	}
+
+	@Override
+	public void exitScalar(ICSSParser.ScalarContext ctx) {
+		Literal scalar = (ScalarLiteral) currentContainer.pop();
+		currentContainer.peek().addChild(scalar);
 	}
 
 	@Override
@@ -120,28 +159,6 @@ public class ASTListener extends ICSSBaseListener {
 	public void exitPropertyName(ICSSParser.PropertyNameContext ctx) {
 		PropertyName propertyName = (PropertyName) currentContainer.pop();
 		currentContainer.peek().addChild(propertyName);
-	}
-
-	@Override
-	public void enterSelector(ICSSParser.SelectorContext ctx) {
-		Selector selector;
-		if(ctx.idSelector() != null){
-		selector = new IdSelector(ctx.getText());
-		}else if(ctx.tagSelector() != null){
-			selector = new TagSelector(ctx.getText());
-		}else if(ctx.classSelector() != null){
-			selector = new ClassSelector(ctx.getText());
-		}
-		else {
-			throw new IllegalArgumentException("Unknown selector type");
-		}
-		currentContainer.push(selector);
-	}
-
-	@Override
-	public void exitSelector(ICSSParser.SelectorContext ctx) {
-		Selector selector = (Selector) currentContainer.pop();
-		currentContainer.peek().addChild(selector);
 	}
 
 	@Override

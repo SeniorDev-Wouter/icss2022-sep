@@ -53,7 +53,7 @@ elseclause: ELSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
 
 ifclause: IF BOX_BRACKET_OPEN ((literal|variableReference)|operation+) BOX_BRACKET_CLOSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE elseclause?;
 
-literal: TRUE | FALSE | PIXELSIZE | PERCENTAGE | SCALAR | COLOR;
+literal: TRUE #booltrue | FALSE #boolfalse | PIXELSIZE #pixelsize | PERCENTAGE #percentage| SCALAR #scalar | COLOR #color;
 
 operation:(multiplyOperation | addOperation | subtractOperation)+;
 
