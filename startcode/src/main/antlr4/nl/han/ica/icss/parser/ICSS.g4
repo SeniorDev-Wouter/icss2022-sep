@@ -45,7 +45,7 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER:
-stylesheet: (stylerule | variableAssignment)*;
+stylesheet: (stylerule | variableAssignment)* EOF;
 
 declaration: propertyName COLON (literal|variableReference|operation+) SEMICOLON;
 
