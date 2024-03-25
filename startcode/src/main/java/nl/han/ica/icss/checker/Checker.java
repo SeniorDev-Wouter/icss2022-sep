@@ -39,43 +39,91 @@ public class Checker {
     }
 
     private void checkVariableAssignment(VariableAssignment variable) {
-        if (!(variable.getChildren().get(0) instanceof VariableReference) || !(variable.getChildren().get(1) instanceof Literal)) {
-            variable.setError("you are stupid idiot");
-        } else if (variable.expression instanceof PercentageLiteral) {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.PERCENTAGE);
-        } else if (variable.expression instanceof PixelLiteral) {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.PIXEL);
-        } else if (variable.expression instanceof ColorLiteral) {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.COLOR);
-        } else if (variable.expression instanceof BoolLiteral) {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.BOOL);
-        } else if (variable.expression instanceof ScalarLiteral) {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.SCALAR);
-        } else {
-            variableTypes.get(0).put(variable.name.name, ExpressionType.UNDEFINED);
+        if (!(variable.getChildren().get(0) instanceof VariableReference) || (!(variable.getChildren().get(1) instanceof Literal)
+                && (!(variable.getChildren().get(1) instanceof VariableReference)))) {
+            variable.setError("Variable cant be of this type.");
         }
+            variableTypes.get(0).put(variable.name.name, getExpressionType(variable));
+
+    }
+
+    private ExpressionType getExpressionType(VariableAssignment variable){
+         if (variable.expression instanceof PercentageLiteral) {
+       return ExpressionType.PERCENTAGE;
+        } else if (variable.expression instanceof PixelLiteral) {
+             return ExpressionType.PIXEL;
+        } else if (variable.expression instanceof ColorLiteral) {
+             return ExpressionType.COLOR;
+        } else if (variable.expression instanceof BoolLiteral) {
+             return ExpressionType.BOOL;
+        } else if (variable.expression instanceof ScalarLiteral) {
+             return ExpressionType.SCALAR;
+        } else if (variable.expression instanceof VariableReference){
+             return getVariableType((VariableReference) variable.expression);
+        }else{
+             return ExpressionType.UNDEFINED;
+         }
     }
 
     private void checkStylerule(Stylerule rule) {
-        for (ASTNode child : rule.getChildren()) {
+        nextScope(rule);
+    }
+
+
+    private void nextScope(ASTNode node) {
+        increaseScope();
+        checkNode(node);
+        decreaseScope();
+    }
+
+    private void increaseScope() {
+        variableTypes.addFirst(new HashMap<>());
+    }
+
+    private void decreaseScope() {
+        variableTypes.removeFirst();
+    }
+
+    private void checkNode(ASTNode node) {
+        for (ASTNode child : node.getChildren()) {
             if (child instanceof Declaration) {
                 checkDeclaration((Declaration) child);
+            } else if (child instanceof IfClause) {
+                checkIfStatement((IfClause) child);
+            } else if (child instanceof ElseClause) {
+                checkElseClause((ElseClause) child);
+            } else if (child instanceof VariableAssignment)
+                checkVariableAssignment((VariableAssignment) child);
+        }
+    }
+
+    private void checkElseClause(ElseClause elseClause) {
+        nextScope(elseClause);
+    }
+
+    private void checkIfStatement(IfClause ifClause) {
+        var ifExpression = ifClause.getChildren().get(0);
+        if (!(ifExpression instanceof BoolLiteral) && !(ifExpression instanceof VariableReference)) {
+            ifClause.setError("Must be boolean");
+        } else if (ifExpression instanceof VariableReference) {
+            if (getVariableType((VariableReference) ifExpression) != ExpressionType.BOOL) {
+                ifClause.setError("Must be boolean");
             }
         }
+        nextScope(ifClause);
     }
 
     private void checkDeclaration(Declaration declaration) {
         if (declaration.property.name.equals("width") | declaration.property.name.equals("height")) {
             if (declaration.expression instanceof Operation) {
                 var operation = resolveOperation(declaration.expression);
-                System.out.println(resolveOperation(declaration.expression));
                 if (!(operation instanceof PixelLiteral) && !(operation instanceof PercentageLiteral) && !(operation instanceof VariableReference)) {
                     declaration.setError("Can only be a pixel or percentage");
                 }
             } else if (!(declaration.expression instanceof PixelLiteral) && !(declaration.expression instanceof PercentageLiteral) && !(declaration.expression instanceof VariableReference)) {
                 declaration.setError("Can only be a pixel or percentage");
             } else if (declaration.expression instanceof VariableReference) {
-                if (getVariableType((VariableReference) declaration.expression, 0) != ExpressionType.PIXEL && getVariableType((VariableReference) declaration.expression, 0) != ExpressionType.PERCENTAGE) {
+                if (getVariableType((VariableReference) declaration.expression) != ExpressionType.PIXEL && getVariableType((VariableReference) declaration.expression) != ExpressionType.PERCENTAGE) {
                     declaration.setError("Variable must be pixel or percentage");
                 }
             }
@@ -85,7 +133,7 @@ public class Checker {
             if (!(declaration.expression instanceof ColorLiteral) && !(declaration.expression instanceof VariableReference)) {
                 declaration.setError("Can only be a color");
             } else if (declaration.expression instanceof VariableReference) {
-                if (getVariableType((VariableReference) declaration.expression, 0) != ExpressionType.COLOR) {
+                if (getVariableType((VariableReference) declaration.expression) != ExpressionType.COLOR) {
                     declaration.setError("Can only be a color");
                 }
             }
@@ -93,8 +141,14 @@ public class Checker {
 
     }
 
-    private ExpressionType getVariableType(VariableReference variableReference, int scope) {
-        var variable = variableTypes.get(scope).get(variableReference.name);
+    private ExpressionType getVariableType(VariableReference variableReference) {
+        ExpressionType variable = null;
+        for (int i = 0; i < variableTypes.size(); i++) {
+            variable = variableTypes.get(i).get(variableReference.name);
+            if (variable != null) {
+                return variable;
+            }
+        }
         if (variable == null) {
             variableReference.setError("Variable doesnt exist");
         }
@@ -102,7 +156,7 @@ public class Checker {
     }
 
     private Literal getVariableLiteralType(VariableReference lhs) {
-        var var = getVariableType(lhs, 0);
+        var var = getVariableType(lhs);
         if (var == ExpressionType.PIXEL) {
             return new PixelLiteral("10px");
         } else if (var == ExpressionType.PERCENTAGE) {
@@ -115,9 +169,7 @@ public class Checker {
             lhs.setError("variable undefined");
         }
         return new BoolLiteral("true");
-
     }
-
 
 
     private ASTNode resolveOperation(ASTNode operation) {
@@ -169,7 +221,6 @@ public class Checker {
             return lhs;
         }
     }
-
 
 
 }

@@ -51,7 +51,7 @@ declaration: propertyName COLON (literal|variableReference|operation+) SEMICOLON
 
 elseclause: ELSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
 
-ifclause: IF BOX_BRACKET_OPEN ((literal|variableReference)|operation+) BOX_BRACKET_CLOSE OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE elseclause?;
+ifclause: IF BOX_BRACKET_OPEN ((literal|variableReference)|operation+) BOX_BRACKET_CLOSE OPEN_BRACE (variableAssignment|declaration|ifclause)+ CLOSE_BRACE elseclause?;
 
 literal: TRUE #booltrue | FALSE #boolfalse | PIXELSIZE #pixelsize | PERCENTAGE #percentage| SCALAR #scalar | COLOR #color;
 
@@ -61,7 +61,7 @@ propertyName: LOWER_IDENT;
 
 selector: classSelector | idSelector | tagSelector;
 
-stylerule: selector OPEN_BRACE (declaration|ifclause)+ CLOSE_BRACE;
+stylerule: selector OPEN_BRACE (declaration|ifclause|variableAssignment)+ CLOSE_BRACE;
 
 variableAssignment: variableReference ASSIGNMENT_OPERATOR ((literal|variableReference)|operation+) SEMICOLON;
 
