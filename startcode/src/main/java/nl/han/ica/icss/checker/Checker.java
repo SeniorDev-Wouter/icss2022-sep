@@ -1,7 +1,5 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.datastructures.IHANLinkedList;
-import nl.han.ica.icss.Pipeline;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
@@ -9,11 +7,8 @@ import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
-import javax.swing.text.Style;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 
 public class Checker {
@@ -143,15 +138,13 @@ public class Checker {
 
     private ExpressionType getVariableType(VariableReference variableReference) {
         ExpressionType variable = null;
-        for (int i = 0; i < variableTypes.size(); i++) {
-            variable = variableTypes.get(i).get(variableReference.name);
+        for (HashMap<String, ExpressionType> variableType : variableTypes) {
+            variable = variableType.get(variableReference.name);
             if (variable != null) {
                 return variable;
             }
         }
-        if (variable == null) {
             variableReference.setError("Variable doesnt exist");
-        }
         return variable;
     }
 
@@ -214,12 +207,10 @@ public class Checker {
     }
 
     private ASTNode handleAddSubtractOperation(ASTNode operation, ASTNode lhs, ASTNode rhs) {
-        if (lhs.getClass() == rhs.getClass()) {
-            return lhs;
-        } else {
+        if (lhs.getClass() != rhs.getClass()) {
             operation.setError("must be same type");
-            return lhs;
         }
+        return lhs;
     }
 
 
