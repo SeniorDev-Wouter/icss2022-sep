@@ -129,7 +129,9 @@ public class Evaluator implements Transform {
             return evaluateSubtractOperation((SubtractOperation) expression);
         } else if (expression instanceof MultiplyOperation) {
             return evaluateMultiplyOperation((MultiplyOperation) expression);
-        } else {
+        } else if(expression instanceof VariableReference){
+            return getVariableValues((VariableReference) expression);
+        }else {
             return expression;
         }
     }
@@ -149,19 +151,15 @@ public class Evaluator implements Transform {
             PercentageLiteral left = (PercentageLiteral) evaluateExpression(expression.lhs);
             ScalarLiteral right = (ScalarLiteral) evaluateExpression(expression.rhs);
             return new PercentageLiteral(left.value * right.value);
-        } else if (expression.lhs instanceof ScalarLiteral) {
-            ScalarLiteral left = (ScalarLiteral) evaluateExpression(expression.lhs);
-            ScalarLiteral right = (ScalarLiteral) evaluateExpression(expression.rhs);
-            return new ScalarLiteral(left.value * right.value);
-        } else if (expression.rhs instanceof PixelLiteral) {
+        } else if (expression.rhs instanceof PixelLiteral  || evaluateExpression(expression.rhs) instanceof PixelLiteral) {
             PixelLiteral right = (PixelLiteral) evaluateExpression(expression.rhs);
             ScalarLiteral left = (ScalarLiteral) evaluateExpression(expression.lhs);
             return new PixelLiteral(left.value * right.value);
-        } else if (expression.rhs instanceof PercentageLiteral) {
+        } else if (expression.rhs instanceof PercentageLiteral  || evaluateExpression(expression.rhs) instanceof PercentageLiteral) {
             PercentageLiteral right = (PercentageLiteral) evaluateExpression(expression.rhs);
             ScalarLiteral left = (ScalarLiteral) evaluateExpression(expression.lhs);
             return new PercentageLiteral(left.value * right.value);
-        } else if (expression.rhs instanceof ScalarLiteral) {
+        } else if (expression.lhs instanceof ScalarLiteral) {
             ScalarLiteral right = (ScalarLiteral) evaluateExpression(expression.rhs);
             ScalarLiteral left = (ScalarLiteral) evaluateExpression(expression.lhs);
             return new ScalarLiteral(left.value * right.value);
@@ -171,6 +169,12 @@ public class Evaluator implements Transform {
     }
 
     private Expression evaluateSubtractOperation(SubtractOperation expression) {
+        if (expression.lhs instanceof VariableReference) {
+            expression.lhs = getVariableValues((VariableReference) expression.lhs);
+        }
+        if (expression.rhs instanceof VariableReference) {
+            expression.rhs = getVariableValues((VariableReference) expression.rhs);
+        }
         if (expression.lhs instanceof PixelLiteral) {
             PixelLiteral left = (PixelLiteral) evaluateExpression(expression.lhs);
             PixelLiteral right = (PixelLiteral) evaluateExpression(expression.rhs);
@@ -189,6 +193,12 @@ public class Evaluator implements Transform {
     }
 
     private Expression evaluateAddOperation(AddOperation expression) {
+        if (expression.lhs instanceof VariableReference) {
+            expression.lhs = getVariableValues((VariableReference) expression.lhs);
+        }
+        if (expression.rhs instanceof VariableReference) {
+            expression.rhs = getVariableValues((VariableReference) expression.rhs);
+        }
         if (expression.lhs instanceof PixelLiteral) {
             PixelLiteral left = (PixelLiteral) evaluateExpression(expression.lhs);
             PixelLiteral right = (PixelLiteral) evaluateExpression(expression.rhs);
