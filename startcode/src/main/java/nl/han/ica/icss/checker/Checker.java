@@ -34,27 +34,31 @@ public class Checker {
     }
 
     private void checkVariableAssignment(VariableAssignment variable) {
-        if (!(variable.getChildren().get(0) instanceof VariableReference) || (!(variable.getChildren().get(1) instanceof Literal)
-                && (!(variable.getChildren().get(1) instanceof VariableReference)))) {
+        if (!(variable.getChildren().get(0) instanceof VariableReference) || (!(variable.getChildren().get(1) instanceof Operation) && (!(variable.getChildren().get(1) instanceof Literal)
+                && (!(variable.getChildren().get(1) instanceof VariableReference))))) {
             variable.setError("Variable cant be of this type.");
         }
-            variableTypes.get(0).put(variable.name.name, getExpressionType(variable));
+        if(variable.getChildren().get(1) instanceof Operation){
+            variableTypes.get(0).put(variable.name.name, getExpressionType((Expression) resolveOperation(variable.expression)));
 
+        }else {
+            variableTypes.get(0).put(variable.name.name, getExpressionType(variable.expression));
+        }
     }
 
-    private ExpressionType getExpressionType(VariableAssignment variable){
-         if (variable.expression instanceof PercentageLiteral) {
+    private ExpressionType getExpressionType(Expression expression){
+         if (expression instanceof PercentageLiteral) {
        return ExpressionType.PERCENTAGE;
-        } else if (variable.expression instanceof PixelLiteral) {
+        } else if (expression instanceof PixelLiteral) {
              return ExpressionType.PIXEL;
-        } else if (variable.expression instanceof ColorLiteral) {
+        } else if (expression instanceof ColorLiteral) {
              return ExpressionType.COLOR;
-        } else if (variable.expression instanceof BoolLiteral) {
+        } else if (expression instanceof BoolLiteral) {
              return ExpressionType.BOOL;
-        } else if (variable.expression instanceof ScalarLiteral) {
+        } else if (expression instanceof ScalarLiteral) {
              return ExpressionType.SCALAR;
-        } else if (variable.expression instanceof VariableReference){
-             return getVariableType((VariableReference) variable.expression);
+        } else if (expression instanceof VariableReference){
+             return getVariableType((VariableReference) expression);
         }else{
              return ExpressionType.UNDEFINED;
          }
